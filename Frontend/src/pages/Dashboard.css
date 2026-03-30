@@ -175,8 +175,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, #ede9fe, #fef3c7);
-  border: 1.5px solid #c4b5fd;
+  background: var(--card);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
   padding: 1rem 1.4rem;
   margin-bottom: 1.5rem;
