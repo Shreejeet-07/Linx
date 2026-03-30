@@ -1,0 +1,320 @@
+================================================================================
+                        LINX — PROJECT DOCUMENTATION
+                     A Linktree-style Full Stack Web App
+================================================================================
+
+--------------------------------------------------------------------------------
+WHAT IS THIS APP?
+--------------------------------------------------------------------------------
+Linx is a Linktree-style web application where users can:
+  - Sign up and log in
+  - Add, edit, delete, and toggle their own links
+  - Click any link to be redirected to the actual URL in a new tab
+  - Track how many times each link was clicked
+  - Edit their profile (avatar emoji + bio)
+  - Preview their public Linx page
+
+There is also an Admin account that can:
+  - See all registered users
+  - View every user's links
+  - Delete any user or any link
+  - See total stats (users, links, clicks)
+
+All data is stored in the browser's localStorage — no database required.
+
+--------------------------------------------------------------------------------
+HOW TO START THE APP
+--------------------------------------------------------------------------------
+
+  START FRONTEND (React):
+  -----------------------
+  Open a terminal and run:
+
+      cd "d:\Full stack frontend\Frontend"
+      npm start
+
+  This starts the React app at:  http://localhost:3000
+
+
+  START BACKEND (Express — optional, only needed for production build):
+  ---------------------------------------------------------------------
+  Open a separate terminal and run:
+
+      cd "d:\Full stack frontend"
+      node Backend\server.js
+
+  This starts the Express server at:  http://localhost:5000
+
+  NOTE: Since the app now uses localStorage for all data, you only need
+  the frontend running (npm start) to use the full app. The backend is
+  only needed if you want to serve the production build.
+
+
+  START BOTH AT ONCE (from root folder):
+  ---------------------------------------
+      cd "d:\Full stack frontend"
+      npm run dev
+
+
+  ADMIN LOGIN CREDENTIALS:
+  ------------------------
+      Email    : admin@linx.app
+      Password : admin123
+
+  The admin account is automatically created in localStorage on first load.
+
+--------------------------------------------------------------------------------
+PROJECT FOLDER STRUCTURE
+--------------------------------------------------------------------------------
+
+d:\Full stack frontend\
+│
+├── Backend\
+│   ├── server.js           ← Express backend server
+│   └── linx back.html      ← Old file (ignore, not used)
+│
+├── Frontend\
+│   ├── public\             ← Static HTML shell for React
+│   │   └── index.html      ← Root HTML file React mounts into
+│   │
+│   ├── src\
+│   │   ├── App.js          ← Root component, handles routing between pages
+│   │   ├── App.css         ← Global CSS variables and shared styles
+│   │   ├── index.js        ← React entry point, mounts App into DOM
+│   │   ├── store.js        ← All localStorage read/write logic (the "database")
+│   │   │
+│   │   ├── pages\
+│   │   │   ├── Landing.js          ← Public landing/home page
+│   │   │   ├── Landing.css
+│   │   │   ├── Dashboard.js        ← Logged-in user's dashboard
+│   │   │   ├── Dashboard.css
+│   │   │   ├── AdminDashboard.js   ← Admin panel
+│   │   │   └── AdminDashboard.css
+│   │   │
+│   │   └── components\
+│   │       ├── AuthModal.js        ← Login / Signup modal
+│   │       ├── AuthModal.css
+│   │       ├── Nav.js              ← Landing page navbar
+│   │       ├── Nav.css
+│   │       ├── Hero.js             ← Landing page hero section
+│   │       ├── Hero.css
+│   │       ├── HowItWorks.js       ← "3 steps" section on landing
+│   │       ├── HowItWorks.css
+│   │       ├── Features.js         ← Features grid on landing
+│   │       ├── Features.css
+│   │       ├── DashboardPreview.js ← Static dashboard mockup on landing
+│   │       ├── DashboardPreview.css
+│   │       ├── Pricing.js          ← Pricing cards on landing
+│   │       ├── Pricing.css
+│   │       ├── CTA.js              ← Call-to-action section on landing
+│   │       ├── CTA.css
+│   │       ├── Footer.js           ← Footer on landing
+│   │       └── Footer.css
+│   │
+│   └── package.json        ← React app dependencies and scripts
+│
+├── package.json            ← Backend dependencies and dev scripts
+└── package-lock.json
+
+--------------------------------------------------------------------------------
+FILE-BY-FILE EXPLANATION
+--------------------------------------------------------------------------------
+
+── BACKEND ──────────────────────────────────────────────────────────────────
+
+Backend\server.js
+  - Express.js server running on port 5000
+  - CORS configured to allow requests from http://localhost:3000
+  - Routes: POST /api/signup, POST /api/login, GET/PATCH /api/me
+  - Routes: GET/POST/PATCH/DELETE /api/links, POST /api/links/:id/click
+  - Admin routes: GET /api/admin/users, DELETE /api/admin/users/:id
+  - Serves the React production build from Frontend/build in production
+  - NOTE: Since the app switched to localStorage, these routes are not
+    actively used but the server is kept for production deployment.
+
+── FRONTEND CORE ─────────────────────────────────────────────────────────────
+
+src\index.js
+  - Entry point of the React app
+  - Renders the <App /> component into the #root div in public/index.html
+
+src\App.js
+  - Root component that decides which page to show
+  - Reads 'linx_session' from localStorage on load to restore login state
+  - If no user → shows Landing page
+  - If user.role === 'admin' → shows AdminDashboard
+  - If regular user → shows Dashboard
+  - Handles login (handleAuth), logout (handleLogout), profile update (handleSetUser)
+
+src\App.css
+  - Global CSS custom properties (--ink, --paper, --accent, --accent2, etc.)
+  - Shared utility classes: .btn, .btn-primary, .btn-secondary, .btn-danger,
+    .btn-ghost, .card, .tag, .tag-accent, .tag-green, .tag-red, .tag-muted
+  - Base styles for input, textarea, body
+
+src\store.js  ← THE "DATABASE"
+  - All data is stored in localStorage under the key 'linx_db'
+  - Data shape: { users: [ { id, username, email, password, bio, avatar,
+                              role, createdAt, links: [...] } ] }
+  - On first load, automatically creates the admin account
+  - Exported functions:
+      signup({ username, email, password })  → creates new user
+      login({ email, password })             → validates credentials
+      getLinks(userId)                       → returns user's links sorted by order
+      addLink(userId, { title, url, icon })  → adds a new link
+      updateLink(userId, linkId, patch)      → edits a link (title/url/icon/active)
+      deleteLink(userId, linkId)             → removes a link
+      trackClick(userId, linkId)             → increments click count by 1
+      updateProfile(userId, { bio, avatar }) → saves profile changes
+      getAllUsers()                          → returns all non-admin users (admin only)
+      adminDeleteUser(userId)               → deletes a user entirely
+      adminDeleteLink(userId, linkId)       → deletes a specific link from any user
+
+── PAGES ─────────────────────────────────────────────────────────────────────
+
+src\pages\Landing.js
+  - The public homepage shown to logged-out visitors
+  - Sections: Navbar, Hero (with animated phone mockup), Features grid, CTA
+  - "Get Started" and "Log in" buttons open the AuthModal
+  - Passes onAuth callback down to AuthModal so login/signup redirects to dashboard
+
+src\pages\Dashboard.js
+  - The main page for logged-in regular users
+  - Has 3 tabs:
+      My Links  → Add/edit/delete links, toggle active/inactive, see click counts
+      Preview   → See exactly how your public Linx page looks, click links to open them
+      Profile   → Edit your avatar emoji and bio
+  - All data operations go through store.js (localStorage)
+  - Clicking a link in Preview tab opens the URL in a new tab AND increments click count
+
+src\pages\AdminDashboard.js
+  - Only accessible when logged in as admin (role === 'admin')
+  - Shows stats: total users, total links, total clicks
+  - Lists all registered users with their links
+  - Click on a user row to expand and see their links
+  - Admin can delete any user (removes all their links too)
+  - Admin can delete any individual link from any user
+  - Search bar to filter users by username or email
+
+── COMPONENTS ────────────────────────────────────────────────────────────────
+
+src\components\AuthModal.js
+  - Modal dialog for both Login and Signup
+  - Signup fields: username, email, password
+  - Login fields: email, password
+  - Calls store.js signup() or login() directly (no API call)
+  - Shows inline error messages (wrong password, email taken, etc.)
+  - Toggle link to switch between login and signup modes
+  - On success, calls onAuth(user) to update App state
+
+src\components\Nav.js
+  - Fixed top navbar on the landing page
+  - Shows "Log in" and "Get Started" buttons
+  - Blurred glass background effect
+
+src\components\Hero.js
+  - Large hero section with headline, subtext, CTA buttons
+  - Animated floating phone mockup showing sample links
+  - Decorative blurred blob shapes in background
+
+src\components\HowItWorks.js
+  - Dark background section with 3 numbered steps
+  - Step 1: Sign Up, Step 2: Add Links, Step 3: Share
+
+src\components\Features.js
+  - Grid of 4 feature cards + 1 wide accent card
+  - Features: Beautiful Themes, Link Analytics, Drag & Drop, Secure & Private, Responsive
+
+src\components\DashboardPreview.js
+  - Static visual mockup of the dashboard UI
+  - Shows fake stats, sidebar, and link rows to give visitors a preview
+
+src\components\Pricing.js
+  - Two pricing cards: Pro (₹0) and Team (₹299/month)
+
+src\components\CTA.js
+  - Dark call-to-action section with username claim input
+  - Clicking "Claim it" opens the signup modal
+
+src\components\Footer.js
+  - Simple footer with logo, copyright, and links
+
+── CONFIG FILES ──────────────────────────────────────────────────────────────
+
+Frontend\package.json
+  - React app config
+  - Dependencies: react, react-dom, react-scripts
+  - Scripts: npm start (dev), npm run build (production)
+  - "proxy": "http://localhost:5000" — forwards API calls to backend in dev
+
+package.json  (root)
+  - Backend config
+  - Dependencies: express, mongoose, cors, bcryptjs, jsonwebtoken, concurrently
+  - Scripts:
+      npm start     → starts backend only
+      npm run dev   → starts backend + frontend together using concurrently
+
+public\index.html
+  - The single HTML file React renders into
+  - Contains <div id="root"> where the entire React app mounts
+
+--------------------------------------------------------------------------------
+DATA FLOW SUMMARY
+--------------------------------------------------------------------------------
+
+  User visits site
+       ↓
+  App.js checks localStorage('linx_session')
+       ↓
+  No session → Landing.js shown
+       ↓
+  User clicks "Get Started" → AuthModal opens
+       ↓
+  User fills form → store.js signup() or login() called
+       ↓
+  User object saved to localStorage('linx_session')
+       ↓
+  App.js re-renders:
+    - role === 'admin'  → AdminDashboard.js
+    - role === 'user'   → Dashboard.js
+       ↓
+  Dashboard reads links from localStorage('linx_db')
+       ↓
+  User adds/edits/deletes links → store.js updates localStorage('linx_db')
+       ↓
+  User clicks a link in Preview → store.js trackClick() increments count
+                                 → window.open() opens URL in new tab
+
+--------------------------------------------------------------------------------
+TECH STACK
+--------------------------------------------------------------------------------
+
+  Frontend  : React 19, plain CSS (no Tailwind/Bootstrap)
+  Storage   : Browser localStorage (no database needed)
+  Backend   : Node.js + Express 5 (for production serving)
+  Fonts     : Google Fonts — Syne (headings) + DM Sans (body)
+
+--------------------------------------------------------------------------------
+NOTES
+--------------------------------------------------------------------------------
+
+  - The backend (server.js) is NOT required to run the app in development.
+    Just run "npm start" inside the Frontend folder and everything works.
+
+  - All user data, links, and click counts persist in the browser's
+    localStorage. Clearing browser data will reset everything.
+
+  - The admin account is auto-created on first app load with:
+      Email    : admin@linx.app
+      Password : admin123
+
+  - To reset all data, open browser DevTools → Application →
+    Local Storage → delete 'linx_db' and 'linx_session' keys.
+
+  - Components in src/components/ that are NOT currently used in the main
+    app flow (Nav, Hero, HowItWorks, Features, DashboardPreview, Pricing,
+    CTA, Footer) are used inside Landing.js to build the public homepage.
+
+================================================================================
+                              END OF DOCUMENTATION
+================================================================================

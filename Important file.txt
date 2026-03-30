@@ -1,0 +1,120 @@
+================================================================
+                    LINX PROJECT - IMPORTANT FILE
+              HOW TO RUN THE WEBSITE (STEP BY STEP)
+================================================================
+
+
+WHAT YOU NEED TO INSTALL FIRST
+--------------------------------
+1. Node.js        →  Download from https://nodejs.org/
+2. MongoDB        →  Download from https://www.mongodb.com/try/download/community
+
+
+================================================================
+STEP 1 - INSTALL BACKEND PACKAGES
+================================================================
+
+1. Open Command Prompt
+2. Type this and press Enter:
+
+   cd d:\linx\Linx-main\Linx-main\Backend
+   npm install
+
+Wait for it to finish.
+
+
+================================================================
+STEP 2 - INSTALL FRONTEND PACKAGES
+================================================================
+
+1. Open a NEW Command Prompt
+2. Type this and press Enter:
+
+   cd d:\linx\Linx-main\Linx-main\Frontend
+   npm install
+
+Wait for it to finish.
+
+
+================================================================
+STEP 3 - START MONGODB DATABASE
+================================================================
+
+1. Open a NEW Command Prompt
+2. Type this and press Enter:
+
+   mongod
+
+Keep this window open. Do NOT close it.
+
+
+================================================================
+STEP 4 - START THE BACKEND SERVER
+================================================================
+
+1. Open a NEW Command Prompt
+2. Type this and press Enter:
+
+   cd d:\linx\Linx-main\Linx-main\Backend
+   node server.js
+
+You should see:
+   MongoDB connected
+   Server running on port 5000
+
+Keep this window open. Do NOT close it.
+
+
+================================================================
+STEP 5 - START THE FRONTEND
+================================================================
+
+1. Open a NEW Command Prompt
+2. Type this and press Enter:
+
+   cd d:\linx\Linx-main\Linx-main\Frontend
+   npm start
+
+Wait for it to open automatically in your browser.
+If it does not open, go to: http://localhost:3000
+
+Keep this window open. Do NOT close it.
+
+
+================================================================
+WEBSITE IS NOW RUNNING!
+================================================================
+
+Open your browser and go to:
+
+   http://localhost:3000
+
+
+ADMIN LOGIN DETAILS
+--------------------
+   Email    :  admin@linx.app
+   Password :  admin123
+
+
+================================================================
+SUMMARY - OPEN 3 TERMINALS AT THE SAME TIME
+================================================================
+
+   Terminal 1  →  mongod
+   Terminal 2  →  node server.js       (inside Backend folder)
+   Terminal 3  →  npm start            (inside Frontend folder)
+
+
+================================================================
+IF SOMETHING GOES WRONG
+================================================================
+
+Problem                        Solution
+------------------------------ ------------------------------------
+mongod is not recognized       Install MongoDB and restart PC
+npm is not recognized          Install Node.js and restart PC
+Port 5000 already in use       Restart your PC and try again
+Website not loading            Make sure all 3 terminals are open
+npm install fails              Delete node_modules and run again
+
+================================================================
