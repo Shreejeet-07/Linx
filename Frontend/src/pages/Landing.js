@@ -88,7 +88,7 @@ export default function Landing({ onAuth, onBrowse }) {
             {menuOpen && (
               <div className="l-nav-dropdown">
                 <button className="l-nav-drop-item" onClick={() => { setMenuOpen(false); onBrowse(); }}>👥 Browse Creators</button>
-                <button className="l-nav-drop-item" onClick={() => { setMenuOpen(false); setModal('login'); }}>🔑 Log in</button>
+                <button className="l-nav-drop-item" onClick={() => { setMenuOpen(false); setModal('login'); }}>👤 Your Profile</button>
                 <button className="l-nav-drop-item l-nav-drop-primary" onClick={() => { setMenuOpen(false); setModal('signup'); }}>🚀 Get Started →</button>
               </div>
             )}
