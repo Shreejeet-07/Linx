@@ -117,12 +117,12 @@ export default function Landing({ onAuth, onBrowse }) {
               <div className="l-pname">@Linx</div>
               <div className="l-pbio">Designer & creator ✦</div>
               {[
-                { bg: '#EDE9FE', icon: '🎨', label: 'My Portfolio' },
+                { bg: '#EDE9FE', icon: '🚀', label: 'Get Started' },
                 { bg: '#FEF3C7', icon: '💼', label: 'Hire Me' },
                 { bg: '#FEE2E2', icon: '🎵', label: 'Latest Track' },
                 { bg: '#DCFCE7', icon: '🛒', label: 'Shop My Merch' },
               ].map(({ bg, icon, label }) => (
-                <div className="l-plink" key={label}>
+                <div className="l-plink" key={label} onClick={label === 'Get Started' ? () => setModal('signup') : undefined} style={label === 'Get Started' ? { cursor: 'pointer' } : {}}>
                   <span className="l-plink-icon" style={{ background: bg }}>{icon}</span>
                   {label}
                 </div>
