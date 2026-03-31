@@ -227,7 +227,7 @@ export default function Landing({ onAuth, onBrowse }) {
       {/* FOOTER */}
       <footer className="l-footer">
         <span className="l-logo">Lin<span>x</span></span>
-        <p>© 2025 Linx. Made with ♥ by the founders.</p>
+        <p>© 2026 Linx. Made with ♥ by the founders.</p>
       </footer>
 
       {modal && <AuthModal mode={modal} onClose={() => setModal(null)} onToggle={setModal} onAuth={onAuth} />}
