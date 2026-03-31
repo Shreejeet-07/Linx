@@ -205,7 +205,7 @@
 }
 
 .l-phone-inner {
-  background: linear-gradient(180deg, #F0EBF8, #E8E3F0);
+  background: var(--card);
   border-radius: 28px;
   padding: 1.5rem 1rem;
 }
@@ -218,15 +218,16 @@
   font-size: 1.4rem;
   animation: breathe 3s ease-in-out infinite;
 }
-.l-pname { text-align: center; font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif; font-weight: 700; font-size: 0.88rem; margin-bottom: 0.2rem; color: #0d0d0d; }
-.l-pbio { text-align: center; font-size: 0.65rem; color: #777; margin-bottom: 1rem; }
+.l-pname { text-align: center; font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif; font-weight: 700; font-size: 0.88rem; margin-bottom: 0.2rem; color: var(--ink); }
+.l-pbio { text-align: center; font-size: 0.65rem; color: var(--muted); margin-bottom: 1rem; }
 .l-plink {
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--paper);
   backdrop-filter: blur(8px);
   border-radius: 10px;
   padding: 0.55rem 0.8rem;
   margin-bottom: 0.5rem;
   font-size: 0.72rem; font-weight: 500;
+  color: var(--ink);
   display: flex; align-items: center; gap: 0.5rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   cursor: pointer;
