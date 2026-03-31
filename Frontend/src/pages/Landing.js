@@ -103,7 +103,6 @@ export default function Landing({ onAuth, onBrowse }) {
           <p>Share all your links — portfolio, socials, shop — from one beautiful page. Built for creators, freelancers, and brands.</p>
           <div className="l-hero-btns">
             <button className="btn btn-primary" onClick={() => setModal('signup')}>Create your Linx →</button>
-            <button className="btn btn-secondary" onClick={onBrowse}>Browse as Guest</button>
           </div>
         </div>
 
@@ -118,11 +117,11 @@ export default function Landing({ onAuth, onBrowse }) {
               <div className="l-pbio">Designer & creator ✦</div>
               {[
                 { bg: '#EDE9FE', icon: '🚀', label: 'Get Started' },
-                { bg: '#FEF3C7', icon: '💼', label: 'Hire Me' },
+                { bg: '#FEF3C7', icon: '👥', label: 'Browse as Guest' },
                 { bg: '#FEE2E2', icon: '🎵', label: 'Latest Track' },
                 { bg: '#DCFCE7', icon: '🛒', label: 'Shop My Merch' },
               ].map(({ bg, icon, label }) => (
-                <div className="l-plink" key={label} onClick={label === 'Get Started' ? () => setModal('signup') : undefined} style={label === 'Get Started' ? { cursor: 'pointer' } : {}}>
+                <div className="l-plink" key={label} onClick={label === 'Get Started' ? () => setModal('signup') : label === 'Browse as Guest' ? onBrowse : undefined} style={label === 'Get Started' || label === 'Browse as Guest' ? { cursor: 'pointer' } : {}}>
                   <span className="l-plink-icon" style={{ background: bg }}>{icon}</span>
                   {label}
                 </div>
