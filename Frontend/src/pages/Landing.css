@@ -48,10 +48,10 @@
   -webkit-text-fill-color: transparent;
 }
 .l-nav-menu { position: relative; }
-.l-nav-menu-trigger { font-weight: 800; font-size: 0.95rem; }
+.l-nav-menu-trigger { font-weight: 800; font-size: 1.1rem; padding: 0.65rem 1.3rem; }
 .l-nav-right { display: flex; flex-direction: row; gap: 0.8rem; align-items: center; flex-wrap: nowrap; }
 .l-nav-right .ts-wrap { width: auto; }
-.l-nav-right .ts-trigger { width: auto; }
+.l-nav-right .ts-trigger { width: auto; font-size: 1rem; padding: 0.65rem 1.2rem; }
 .l-nav-dropdown {
   position: absolute; top: calc(100% + 0.6rem); right: 0;
   background: var(--card);
