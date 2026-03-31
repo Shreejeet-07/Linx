@@ -80,7 +80,6 @@ export default function Landing({ onAuth, onBrowse }) {
       <nav className="l-nav">
         <span className="l-logo">Lin<span>x</span></span>
         <div className="l-nav-right">
-          <ThemeSwitcher dropDown />
           <div className="l-nav-menu">
             <button className="btn btn-ghost l-nav-menu-trigger" onClick={() => setMenuOpen(o => !o)}>
               Menu {menuOpen ? '▴' : '▾'}
@@ -93,6 +92,7 @@ export default function Landing({ onAuth, onBrowse }) {
               </div>
             )}
           </div>
+          <ThemeSwitcher dropDown />
         </div>
       </nav>
 
