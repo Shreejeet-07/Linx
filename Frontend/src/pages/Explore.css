@@ -160,7 +160,7 @@
 .explore-card:hover .explore-card-avatar { transform: scale(1.12) rotate(-3deg); }
 
 .explore-card-name {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
   font-weight: 800; font-size: 1rem;
   margin-bottom: 0.3rem;
   position: relative; z-index: 1;
