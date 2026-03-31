@@ -31,6 +31,7 @@ const FEATURES = [
 ];
 
 export default function Landing({ onAuth, onBrowse }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [modal, setModal] = useState(null);
   const [activeFeature, setActiveFeature] = useState(null);
   const [zoomedFounder, setZoomedFounder] = useState(null);
@@ -80,9 +81,18 @@ export default function Landing({ onAuth, onBrowse }) {
         <span className="l-logo">Lin<span>x</span></span>
         <div className="l-nav-right">
           <ThemeSwitcher dropDown />
-          <button className="btn btn-ghost" onClick={onBrowse}>Browse Creators</button>
-          <button className="btn btn-ghost" onClick={() => setModal('login')}>Log in</button>
-          <button className="btn btn-primary" onClick={() => setModal('signup')}>Get Started →</button>
+          <div className="l-nav-menu">
+            <button className="btn btn-ghost l-nav-menu-trigger" onClick={() => setMenuOpen(o => !o)}>
+              Menu {menuOpen ? '▴' : '▾'}
+            </button>
+            {menuOpen && (
+              <div className="l-nav-dropdown">
+                <button className="l-nav-drop-item" onClick={() => { setMenuOpen(false); onBrowse(); }}>👥 Browse Creators</button>
+                <button className="l-nav-drop-item" onClick={() => { setMenuOpen(false); setModal('login'); }}>🔑 Log in</button>
+                <button className="l-nav-drop-item l-nav-drop-primary" onClick={() => { setMenuOpen(false); setModal('signup'); }}>🚀 Get Started →</button>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
 

@@ -47,7 +47,39 @@
 .l-logo span {
   -webkit-text-fill-color: transparent;
 }
-.l-nav-right { display: flex; gap: 0.8rem; align-items: center; flex-wrap: nowrap; }
+.l-nav-menu { position: relative; }
+.l-nav-menu-trigger { font-weight: 800; font-size: 0.95rem; }
+.l-nav-dropdown {
+  position: absolute; top: calc(100% + 0.6rem); right: 0;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  z-index: 200;
+  animation: dropdownSlide 0.2s var(--ease-fluid) both;
+}
+@keyframes dropdownSlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.l-nav-drop-item {
+  background: none; border: none; cursor: pointer;
+  padding: 0.85rem 1.2rem;
+  text-align: left; font-size: 0.95rem; font-weight: 600;
+  color: var(--ink);
+  transition: background var(--dur-fast) var(--ease-smooth);
+}
+.l-nav-drop-item:hover { background: var(--border); }
+.l-nav-drop-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.l-nav-drop-primary:hover { background: var(--accent); opacity: 0.9; }
+
+
 
 .l-nav-right .ts-trigger {
   color: var(--ink);
