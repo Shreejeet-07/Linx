@@ -46,7 +46,7 @@
 .l-logo span {
   -webkit-text-fill-color: transparent;
 }
-.l-nav-right { display: flex; gap: 0.8rem; align-items: center; flex-wrap: nowrap; white-space: nowrap; }
+.l-nav-right { display: flex; gap: 0.8rem; align-items: center; flex-wrap: nowrap; }
 
 .l-nav-right .ts-trigger {
   color: var(--ink);
