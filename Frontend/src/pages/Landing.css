@@ -52,6 +52,7 @@
 .l-nav-right { display: flex; flex-direction: row; gap: 0.8rem; align-items: center; flex-wrap: nowrap; }
 .l-nav-right .ts-wrap { width: auto; }
 .l-nav-right .ts-trigger { width: auto; font-size: 1rem; padding: 0.65rem 1.2rem; }
+.l-nav-right .ts-popover { left: unset; right: 0; width: 260px; }
 .l-nav-dropdown {
   position: absolute; top: calc(100% + 0.6rem); right: 0;
   background: var(--card);
