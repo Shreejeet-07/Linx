@@ -93,6 +93,7 @@ export default function Landing({ onAuth, onBrowse }) {
               </div>
             )}
           </div>
+          <button className="btn btn-ghost" onClick={() => setModal('login')}>Log in</button>
         </div>
       </nav>
 
