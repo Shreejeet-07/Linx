@@ -48,13 +48,23 @@
 }
 
 .explore-header { margin-bottom: 2rem; }
+@keyframes liquidShimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
 .explore-header h1 {
   font-family: 'Aparajita', sans-serif;
-  font-size: 3.5rem; font-weight: 800;
-  letter-spacing: -1.5px;
+  font-size: clamp(2.8rem, 6vw, 4.5rem); font-weight: 800;
+  letter-spacing: -2px;
   margin: 0.6rem 0 0.4rem;
   text-transform: uppercase;
-  color: var(--ink);
+  background: linear-gradient(135deg, var(--ink) 0%, var(--accent) 50%, var(--accent2) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: liquidShimmer 4s linear infinite;
+  filter: drop-shadow(0 4px 24px var(--accent-soft));
 }
 .explore-header p { color: var(--muted); font-size: 0.95rem; margin-bottom: 1rem; }
 
