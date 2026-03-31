@@ -81,6 +81,7 @@
 
 .appnav-user-info { min-width: 0; }
 .appnav-username {
+  font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
   font-size: 0.85rem;
   font-weight: 700;
   color: #fff;

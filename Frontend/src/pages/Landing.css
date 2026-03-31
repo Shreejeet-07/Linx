@@ -218,7 +218,7 @@
   font-size: 1.4rem;
   animation: breathe 3s ease-in-out infinite;
 }
-.l-pname { text-align: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; margin-bottom: 0.2rem; }
+.l-pname { text-align: center; font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif; font-weight: 700; font-size: 0.88rem; margin-bottom: 0.2rem; }
 .l-pbio { text-align: center; font-size: 0.65rem; color: #777; margin-bottom: 1rem; }
 .l-plink {
   background: rgba(255, 255, 255, 0.85);

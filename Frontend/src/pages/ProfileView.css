@@ -131,7 +131,7 @@
 .pv-avatar:hover { transform: scale(1.08); }
 
 .pv-name {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
   font-weight: 800; font-size: 1.3rem;
   margin-bottom: 0.3rem; color: #fff;
   animation: nameFluidSlide 0.5s var(--ease-fluid) 0.3s both;
