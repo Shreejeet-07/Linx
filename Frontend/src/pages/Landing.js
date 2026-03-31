@@ -114,7 +114,7 @@ export default function Landing({ onAuth, onBrowse }) {
             <div className="l-phone-inner">
               <div className="l-notch" />
               <div className="l-avatar">🌟</div>
-              <div className="l-pname">@alex.creates</div>
+              <div className="l-pname">@Linx</div>
               <div className="l-pbio">Designer & creator ✦</div>
               {[
                 { bg: '#EDE9FE', icon: '🎨', label: 'My Portfolio' },
