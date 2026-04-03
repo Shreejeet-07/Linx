@@ -126,16 +126,17 @@ app.post('/api/google-auth', async (req, res) => {
   }
 });
 
-// ── AUTH ROUTES (admin login only — users must use Google) ──
+// ── AUTH ROUTES ───────────────────────────────────────────
 app.post('/api/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password)
-      return res.status(400).json({ message: 'Email and password required' });
+    const { emailOrUsername, password } = req.body;
+    if (!emailOrUsername || !password)
+      return res.status(400).json({ message: 'Email/username and password required' });
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [{ email: emailOrUsername }, { username: emailOrUsername }]
+    });
     if (!user) return res.status(404).json({ message: 'User not found' });
-    if (user.role !== 'admin') return res.status(403).json({ message: 'Please sign in with Google' });
 
     if (!await bcrypt.compare(password, user.password))
       return res.status(401).json({ message: 'Wrong password' });
