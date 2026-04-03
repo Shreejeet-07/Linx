@@ -4,14 +4,19 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const { OAuth2Client } = require('google-auth-library');
+require('dotenv').config();
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
-app.use(express.json());
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'linx_secret_2025';
 
-mongoose.connect('mongodb://127.0.0.1:27017/linx')
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/linx')
   .then(() => { console.log('MongoDB connected'); seedAdmin(); })
   .catch(err => console.error('MongoDB error:', err));
 
@@ -31,11 +36,28 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true },
   bio:      { type: String, default: '' },
   avatar:   { type: String, default: '🌟' },
+  photo:    { type: String, default: null },
+  profileTheme: { type: String, default: 'default' },
   role:     { type: String, enum: ['user', 'admin'], default: 'user' },
   links:    [LinkSchema],
+  notifications: [{
+    id:        { type: String },
+    type:      { type: String },
+    linkTitle: { type: String },
+    linkIcon:  { type: String },
+    time:      { type: String },
+    read:      { type: Boolean, default: false },
+  }],
 }, { timestamps: true });
 
 const User = mongoose.model('User', UserSchema);
+
+// ── FOUNDER PHOTOS SCHEMA ─────────────────────────────────
+const FounderPhotoSchema = new mongoose.Schema({
+  name: { type: String, required: true, unique: true },
+  photo: { type: String, default: null },
+});
+const FounderPhoto = mongoose.model('FounderPhoto', FounderPhotoSchema);
 
 // ── SEED ADMIN ────────────────────────────────────────────
 async function seedAdmin() {
@@ -64,27 +86,47 @@ function adminOnly(req, res, next) {
   next();
 }
 
-// ── AUTH ROUTES ───────────────────────────────────────────
-app.post('/api/signup', async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    if (!username || !email || !password)
-      return res.status(400).json({ message: 'All fields are required' });
 
-    if (await User.findOne({ email }))
-      return res.status(409).json({ message: 'Email already in use' });
-    if (await User.findOne({ username }))
-      return res.status(409).json({ message: 'Username already taken' });
+app.get('/', (req, res) => res.json({ message: 'API is running!' }));
+
+// ── GOOGLE AUTH ───────────────────────────────────────────
+app.post('/api/google-auth', async (req, res) => {
+  try {
+    const { credential, password, username } = req.body;
+    if (!credential) return res.status(400).json({ message: 'Google credential required' });
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const { email, email_verified } = ticket.getPayload();
+
+    if (!email_verified) return res.status(400).json({ message: 'Google email not verified' });
+
+    const existing = await User.findOne({ email });
+
+    // LOGIN — user already exists
+    if (existing) {
+      const token = jwt.sign({ id: existing._id, role: existing.role }, JWT_SECRET, { expiresIn: '7d' });
+      return res.json({ token, user: { id: existing._id, username: existing.username, email: existing.email, role: existing.role, bio: existing.bio, avatar: existing.avatar } });
+    }
+
+    // SIGNUP — new user, password + username required
+    if (!password || !username) return res.status(202).json({ message: 'new_user', email });
+
+    if (password.length < 8) return res.status(400).json({ message: 'Password must be at least 8 characters' });
+    if (await User.findOne({ username })) return res.status(409).json({ message: 'Username already taken' });
 
     const hashed = await bcrypt.hash(password, 10);
     const user = await new User({ username, email, password: hashed }).save();
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: user._id, username: user.username, email: user.email, role: user.role, bio: user.bio, avatar: user.avatar } });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Google auth failed', error: err.message });
   }
 });
 
+// ── AUTH ROUTES (admin login only — users must use Google) ──
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -93,6 +135,7 @@ app.post('/api/login', async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.role !== 'admin') return res.status(403).json({ message: 'Please sign in with Google' });
 
     if (!await bcrypt.compare(password, user.password))
       return res.status(401).json({ message: 'Wrong password' });
@@ -106,15 +149,23 @@ app.post('/api/login', async (req, res) => {
 
 // ── USER PROFILE ──────────────────────────────────────────
 app.get('/api/me', auth, async (req, res) => {
-  const user = await User.findById(req.user.id).select('-password');
-  res.json(user);
+  const user = await User.findById(req.user.id).select('-password -notifications -links');
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  res.json({ ...user.toObject(), id: user._id });
 });
 
 app.patch('/api/me', auth, async (req, res) => {
   try {
-    const { bio, avatar } = req.body;
-    const user = await User.findByIdAndUpdate(req.user.id, { bio, avatar }, { new: true }).select('-password');
-    res.json(user);
+    const { bio, avatar, photo, profileTheme } = req.body;
+    const updateData = { bio, avatar, profileTheme };
+    // Only update photo if provided
+    if (photo !== undefined) updateData.photo = photo;
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: updateData },
+      { new: true }
+    ).select('-password -notifications');
+    res.json({ ...user.toObject(), id: user._id });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -164,16 +215,108 @@ app.delete('/api/links/:linkId', auth, async (req, res) => {
   }
 });
 
-// track click
+// track click (authenticated)
 app.post('/api/links/:linkId/click', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     const link = user.links.id(req.params.linkId);
-    if (link) { link.clicks += 1; await user.save(); }
+    if (link) {
+      link.clicks += 1;
+      user.notifications.unshift({ id: Date.now().toString(), type: 'click', linkTitle: link.title, linkIcon: link.icon, time: new Date().toISOString(), read: false });
+      if (user.notifications.length > 50) user.notifications = user.notifications.slice(0, 50);
+      await user.save();
+    }
     res.json({ clicks: link?.clicks });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+});
+
+// ── NOTIFICATIONS ROUTES ──────────────────────────────────────
+app.get('/api/notifications', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('notifications');
+    res.json(user.notifications || []);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+app.patch('/api/notifications/read', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    user.notifications.forEach(n => { n.read = true; });
+    await user.save();
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+app.delete('/api/notifications', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    user.notifications = [];
+    await user.save();
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// ── FOUNDER PHOTOS ROUTES ─────────────────────────────────
+app.get('/api/founder-photos', async (req, res) => {
+  try {
+    const photos = await FounderPhoto.find();
+    const result = {};
+    photos.forEach(p => { result[p.name] = p.photo; });
+    res.json(result);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+app.post('/api/founder-photos', auth, adminOnly, async (req, res) => {
+  try {
+    const { name, photo } = req.body;
+    await FounderPhoto.findOneAndUpdate({ name }, { photo }, { upsert: true, new: true });
+    const photos = await FounderPhoto.find();
+    const result = {};
+    photos.forEach(p => { result[p.name] = p.photo; });
+    res.json(result);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// ── PUBLIC ROUTES ────────────────────────────────────────
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await User.find({ role: 'user' }).select('-password');
+    res.json(users.map(u => ({
+      id: u._id, username: u.username, bio: u.bio, avatar: u.avatar, photo: u.photo || null,
+      linkCount: u.links.filter(l => l.active).length,
+      totalClicks: u.links.reduce((s, l) => s + (l.clicks || 0), 0),
+      createdAt: u.createdAt
+    })));
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+app.get('/api/users/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({
+      id: user._id, username: user.username, bio: user.bio, avatar: user.avatar, photo: user.photo || null,
+      profileTheme: user.profileTheme || 'default',
+      links: user.links.filter(l => l.active).sort((a, b) => a.order - b.order)
+    });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+app.post('/api/users/:userId/links/:linkId/click', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const link = user.links.id(req.params.linkId);
+    if (link) {
+      link.clicks += 1;
+      user.notifications.unshift({ id: Date.now().toString(), type: 'click', linkTitle: link.title, linkIcon: link.icon, time: new Date().toISOString(), read: false });
+      if (user.notifications.length > 50) user.notifications = user.notifications.slice(0, 50);
+      await user.save();
+    }
+    res.json({ clicks: link?.clicks });
+  } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
 // ── ADMIN ROUTES ──────────────────────────────────────────

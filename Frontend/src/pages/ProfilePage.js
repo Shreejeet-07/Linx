@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { updateProfile, updateUsername, updateEmail } from '../store';
+import { updateProfile, getMe } from '../store';
 import AppNav from '../components/AppNav';
 import './ProfilePage.css';
 
@@ -51,25 +51,16 @@ export default function ProfilePage({ user, onLogout, setUser, currentPage, onNa
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     setErrors({});
 
-    let updated = { ...user };
-
-    if (username !== user.username) {
-      const res = updateUsername(user.id, username.trim());
-      if (res.error) { setErrors({ username: res.error }); return; }
-      updated = { ...updated, username: res.user.username };
-    }
-    if (email !== user.email) {
-      const res = updateEmail(user.id, email.trim());
-      if (res.error) { setErrors({ email: res.error }); return; }
-      updated = { ...updated, email: res.user.email };
-    }
-
     const profileRes = await updateProfile(user.id, { bio, avatar, photo, profileTheme });
     if (profileRes) {
-      updated = { ...updated, bio: profileRes.bio, avatar: profileRes.avatar, photo: profileRes.photo, profileTheme: profileRes.profileTheme };
+      const fresh = await getMe();
+      const updated = fresh
+        ? { ...user, ...fresh, id: fresh.id || fresh._id, profileTheme: profileTheme }
+        : { ...user, bio, avatar, photo, profileTheme, username, email };
+      setUser(updated);
+      setPhoto(updated.photo || null);
     }
 
-    setUser(updated);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -123,6 +114,9 @@ export default function ProfilePage({ user, onLogout, setUser, currentPage, onNa
               <div className="pp-form-header">
                 <h2>Edit Profile</h2>
                 <p>Changes are saved to the database instantly</p>
+                <div style={{ marginTop: '0.8rem', padding: '0.7rem 1rem', background: 'rgba(123,92,246,0.08)', border: '1px solid rgba(123,92,246,0.2)', borderRadius: '10px', fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+                  💡 <strong>Tip:</strong> If you can't see your profile photo, refresh the page. If you're still unable to see it, please upload it again.
+                </div>
               </div>
 
               <form onSubmit={handleSave} className="pp-form">

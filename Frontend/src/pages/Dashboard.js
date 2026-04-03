@@ -12,28 +12,45 @@ export default function Dashboard({ user, onLogout, setUser, currentPage, onNavi
 
   const myPageUrl = `${window.location.origin}/?user=${user.id}`;
 
-  useEffect(() => { setLinks(getLinks(user.id)); }, [user.id]);
+  useEffect(() => {
+    getLinks(user.id).then(setLinks);
+  }, [user.id]);
 
-  function saveLink(e) {
+  useEffect(() => {
+    const refresh = () => getLinks(user.id).then(setLinks);
+    window.addEventListener('focus', refresh);
+    return () => window.removeEventListener('focus', refresh);
+  }, [user.id]);
+
+  async function saveLink(e) {
     e.preventDefault();
     if (!form.title || !form.url) return;
     if (editId) {
-      setLinks(updateLink(user.id, editId, form));
+      const updated = await updateLink(user.id, editId, form);
+      setLinks(updated);
       setEditId(null);
     } else {
-      setLinks(addLink(user.id, form));
+      const updated = await addLink(user.id, form);
+      setLinks(updated);
     }
     setForm({ title: '', url: '', icon: '🔗' });
   }
 
-  function removeLink(id) { setLinks(deleteLink(user.id, id)); }
-  function toggleLink(id, active) { setLinks(updateLink(user.id, id, { active: !active })); }
+  async function removeLink(id) {
+    const updated = await deleteLink(user.id, id);
+    setLinks(updated);
+  }
 
-  function handleClick(link) {
+  async function toggleLink(id, active) {
+    const updated = await updateLink(user.id, id, { active: !active });
+    setLinks(updated);
+  }
+
+  async function handleClick(link) {
     if (!link.active) return;
-    trackClick(user.id, link.id);
-    setLinks(prev => prev.map(l => l.id === link.id ? { ...l, clicks: l.clicks + 1 } : l));
     window.open(link.url.startsWith('http') ? link.url : `https://${link.url}`, '_blank');
+    await trackClick(user.id, link.id);
+    getLinks(user.id).then(setLinks);
   }
 
   function startEdit(link) {
@@ -60,7 +77,6 @@ export default function Dashboard({ user, onLogout, setUser, currentPage, onNavi
       <AppNav user={user} currentPage={currentPage} onNavigate={onNavigate} onLogout={onLogout} />
 
       <main className="dash-main">
-        {/* MY PAGE BANNER */}
         <div className="my-page-banner">
           <div className="my-page-banner-left">
             <div className="my-page-banner-icon">🔗</div>
@@ -74,14 +90,12 @@ export default function Dashboard({ user, onLogout, setUser, currentPage, onNavi
           </button>
         </div>
 
-        {/* STATS */}
         <div className="dash-stats">
           <div className="dash-stat-card"><div className="dash-stat-label">Total Links</div><div className="dash-stat-val">{links.length}</div></div>
           <div className="dash-stat-card"><div className="dash-stat-label">Total Clicks</div><div className="dash-stat-val">{totalClicks}</div></div>
           <div className="dash-stat-card"><div className="dash-stat-label">Active Links</div><div className="dash-stat-val">{links.filter(l => l.active).length}</div></div>
         </div>
 
-        {/* ADD / EDIT FORM */}
         <div className="card dash-form-card">
           <h3>{editId ? 'Edit Link' : 'Add New Link'}</h3>
           <form className="dash-form" onSubmit={saveLink}>
@@ -97,7 +111,6 @@ export default function Dashboard({ user, onLogout, setUser, currentPage, onNavi
           </form>
         </div>
 
-        {/* LINKS LIST */}
         <div className="dash-links-list">
           {links.length === 0 && <div className="dash-empty">No links yet. Add your first one above ↑</div>}
           {links.map((link, i) => (
@@ -120,7 +133,6 @@ export default function Dashboard({ user, onLogout, setUser, currentPage, onNavi
           ))}
         </div>
 
-        {/* PREVIEW SECTION */}
         <div className="dash-preview-wrap">
           <div className="prev-page">
             <div className="prev-banner">

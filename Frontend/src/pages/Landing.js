@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AuthModal from '../components/AuthModal';
 import ThemeSwitcher from '../components/ThemeSwitcher';
+import { getFounderPhotos, saveFounderPhoto } from '../store';
 import './Landing.css';
 
 const FEATURES = [
@@ -30,24 +31,24 @@ const FEATURES = [
   },
 ];
 
-export default function Landing({ onAuth, onBrowse }) {
+export default function Landing({ onAuth, onBrowse, onLeaderboard, user }) {
+  const isAdmin = user?.role === 'admin';
   const [menuOpen, setMenuOpen] = useState(false);
   const [modal, setModal] = useState(null);
   const [activeFeature, setActiveFeature] = useState(null);
   const [zoomedFounder, setZoomedFounder] = useState(null);
-  const [founderPhotos, setFounderPhotos] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('linx_founder_photos') || '{}'); }
-    catch { return {}; }
-  });
+  const [founderPhotos, setFounderPhotos] = useState({});
 
-  function handlePhotoUpload(name, file) {
+  useEffect(() => {
+    getFounderPhotos().then(setFounderPhotos);
+  }, []);
+
+  async function handlePhotoUpload(name, file) {
     if (!file || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
-    reader.onload = e => {
-      const updated = { ...founderPhotos, [name]: e.target.result };
+    reader.onload = async e => {
+      const updated = await saveFounderPhoto(name, e.target.result);
       setFounderPhotos(updated);
-      localStorage.setItem('linx_founder_photos', JSON.stringify(updated));
-      // update zoomed founder photo live if open
       setZoomedFounder(prev => prev?.name === name ? { ...prev, photo: e.target.result } : prev);
     };
     reader.readAsDataURL(file);
@@ -56,8 +57,6 @@ export default function Landing({ onAuth, onBrowse }) {
   const FOUNDERS = [
     { name: 'Shreejeet Patnaik',     initials: 'SP', gradient: 'linear-gradient(135deg,#7B5CF6,#a78bfa)', glow: 'rgba(123,92,246,0.6)' },
     { name: 'Surya Prakash Narayan', initials: 'SN', gradient: 'linear-gradient(135deg,#F97316,#fb923c)', glow: 'rgba(249,115,22,0.6)'  },
-    { name: 'Debi Prasad Das',        initials: 'DD', gradient: 'linear-gradient(135deg,#22C55E,#4ade80)', glow: 'rgba(34,197,94,0.6)'   },
-    { name: 'Jyotispada Mohanty',    initials: 'JM', gradient: 'linear-gradient(135deg,#EC4899,#f472b6)', glow: 'rgba(236,72,153,0.6)'  },
   ];
 
   function scrollTo(id) {
@@ -120,16 +119,17 @@ export default function Landing({ onAuth, onBrowse }) {
                 { bg: '#EDE9FE', icon: '🚀', label: 'Get Started' },
                 { bg: '#FEF3C7', icon: '👥', label: 'Browse as Guest' },
                 { bg: '#F0FDF4', icon: '👨‍💻', label: 'Meet the Founders' },
-                { bg: '#DCFCE7', icon: '🛒', label: 'Shop My Merch' },
+                { bg: '#DCFCE7', icon: '🏆', label: 'Leaderboard' },
               ].map(({ bg, icon, label }) => (
                 <div className="l-plink" key={label}
                   onClick={
                     label === 'Get Started' ? () => setModal('signup') :
                     label === 'Browse as Guest' ? onBrowse :
                     label === 'Meet the Founders' ? () => document.querySelector('.l-founders')?.scrollIntoView({ behavior: 'smooth' }) :
+                    label === 'Leaderboard' ? onLeaderboard :
                     undefined
                   }
-                  style={{ cursor: label === 'Shop My Merch' ? 'default' : 'pointer' }}>
+                  style={{ cursor: label === 'Leaderboard' ? 'pointer' : label === 'Shop My Merch' ? 'default' : 'pointer' }}>
                   <span className="l-plink-icon" style={{ background: bg }}>{icon}</span>
                   {label}
                 </div>
@@ -217,7 +217,8 @@ export default function Landing({ onAuth, onBrowse }) {
                       <div className="l-founder-avatar-glow" style={{ background: f.gradient }} />
                     </div>
                   )}
-                  {/* upload button */}
+                  {/* upload button — admin only */}
+                  {isAdmin && (
                   <label
                     className="l-founder-upload-btn"
                     title="Upload photo"
@@ -230,10 +231,10 @@ export default function Landing({ onAuth, onBrowse }) {
                       onChange={e => handlePhotoUpload(f.name, e.target.files[0])}
                     />
                   </label>
+                  )}
                 </div>
 
                 <div className="l-founder-name">{f.name}</div>
-                <div className="l-founder-role">Co-Founder</div>
                 <div className="l-founder-hint">Click to view</div>
               </div>
             ))}
@@ -275,7 +276,8 @@ export default function Landing({ onAuth, onBrowse }) {
             <div className="founder-zoom-name">{zoomedFounder.name}</div>
             <div className="founder-zoom-role">Co-Founder, Linx</div>
 
-            {/* upload inside lightbox */}
+            {/* upload inside lightbox — admin only */}
+            {isAdmin && (
             <label className="founder-zoom-upload" onClick={e => e.stopPropagation()}>
               {zoomedFounder.photo ? '🔄 Change Photo' : '📷 Add Photo'}
               <input
@@ -284,6 +286,7 @@ export default function Landing({ onAuth, onBrowse }) {
                 onChange={e => handlePhotoUpload(zoomedFounder.name, e.target.files[0])}
               />
             </label>
+            )}
           </div>
         </div>
       )}
