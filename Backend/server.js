@@ -129,13 +129,11 @@ app.post('/api/google-auth', async (req, res) => {
 // ── AUTH ROUTES ───────────────────────────────────────────
 app.post('/api/login', async (req, res) => {
   try {
-    const { emailOrUsername, password } = req.body;
-    if (!emailOrUsername || !password)
+    const { email, password } = req.body;
+    if (!email || !password)
       return res.status(400).json({ message: 'Email/username and password required' });
 
-    const user = await User.findOne({
-      $or: [{ email: emailOrUsername }, { username: emailOrUsername }]
-    });
+    const user = await User.findOne({ $or: [{ email }, { username: email }] });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     if (!await bcrypt.compare(password, user.password))

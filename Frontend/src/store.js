@@ -54,7 +54,7 @@ export async function signup({ username, email, password }) {
 
 export async function login({ emailOrUsername, password }) {
   try {
-    const data = await req('POST', '/api/login', { emailOrUsername, password });
+    const data = await req('POST', '/api/login', { email: emailOrUsername, password });
     setToken(data.token);
     return { user: { ...data.user, id: data.user.id || data.user._id } };
   } catch (err) {
