@@ -1,0 +1,38 @@
+services:
+  # ── BACKEND ───────────────────────────────────────────────
+  - type: web
+    name: linxbackend
+    env: node
+    rootDir: Backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: GOOGLE_CLIENT_ID
+        value: 974176280551-gu3ho075v5nh9cvfl1nbavcq34os90gj.apps.googleusercontent.com
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        fromDatabase:
+          name: linx-db
+          property: connectionString
+
+  # ── FRONTEND ──────────────────────────────────────────────
+  - type: web
+    name: linx-frontend
+    env: static
+    rootDir: Frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    envVars:
+      - key: REACT_APP_GOOGLE_CLIENT_ID
+        value: 974176280551-gu3ho075v5nh9cvfl1nbavcq34os90gj.apps.googleusercontent.com
+      - key: REACT_APP_API_URL
+        value: https://linxbackend.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+databases:
+  - name: linx-db
+    plan: free
